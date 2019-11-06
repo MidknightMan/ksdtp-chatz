@@ -1,6 +1,6 @@
 import "./App.css";
 import React, { Component } from "react";
-import Layout from "./Components/Layout";
+import NameForm from "./Components/NameForm";
 import socketIO from "socket.io-client";
 
 export default class App extends Component {
@@ -11,7 +11,7 @@ export default class App extends Component {
   render() {
     return (
       <div className="App">
-        <Layout title="ksdtp-chat" />
+        <NameForm title="ksdtp-chat" />
       </div>
     );
   }
