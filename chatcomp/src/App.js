@@ -1,9 +1,8 @@
 import React from 'react';
-// import * as apiChat from './apiChat';
 import './App.css';
-import io from 'socket.io-client';
+import openSocket from 'socket.io-client';
 
-const socketUrl = 'http://192.168.230.125:3231';
+const socketUrl = 'http://10.167.7.49:3231';
 
 class App extends React.Component {
   state = {
@@ -14,7 +13,8 @@ class App extends React.Component {
     currentUser: '',
     isLoading: true,
     connection: 'off',
-    socket: null
+    socket: null,
+    trigger1: false
   };
   render() {
     const { isLoading, output, message, connection } = this.state;
@@ -22,12 +22,12 @@ class App extends React.Component {
     return (
       <div className="App">
         <header className="App-header">chat component</header>
+        <div id="output">
+          {output.map((messageText, i) => {
+            return <p key={i}>{messageText}</p>;
+          })}
+        </div>
         <form onSubmit={this.sendMessage}>
-          <div id="output">
-            {output.map(messageText => {
-              return <li key={messageText}>{messageText}</li>;
-            })}
-          </div>
           <input
             type="text"
             placeholder="insert message here"
@@ -43,44 +43,32 @@ class App extends React.Component {
 
   sendMessage = event => {
     event.preventDefault();
-    const { message } = this.state;
-    const socket = io(socketUrl);
+    const { message, socket } = this.state;
     socket.emit('chatMsg', message);
-    this.setState(currentState => {
-      return { output: [...currentState.output, message] };
-    });
+    this.setState({ message: '' });
   };
 
   handleMessageChange = event => {
     event.preventDefault();
-    const messageText = event.target.value;
-    this.setState({ message: messageText });
+    this.setState({ message: event.target.value });
   };
 
   initSocket = () => {
-    const socket = io(socketUrl);
+    const socket = openSocket(socketUrl);
     socket.on('connect', () => {
       console.log('connected');
+      socket.on('chatMsg', msg => {
+        this.setState(currState => {
+          return { output: [...currState.output, msg] };
+        });
+      });
     });
     this.setState({ socket, connection: 'on' });
   };
 
   componentDidMount() {
-    console.log('firing');
     this.setState({ isLoading: false });
     this.initSocket();
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.output.length !== prevState.output.length) {
-      this.setState({ message: '', isLoading: false });
-    }
-    const socket = io(socketUrl);
-    socket.on('chatMsg', msg => {
-      this.setState(currentState => {
-        return { output: [...currentState.output, msg] };
-      });
-    });
   }
 }
 
